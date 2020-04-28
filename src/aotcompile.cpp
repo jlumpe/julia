@@ -735,6 +735,8 @@ void addOptimizationPasses(legacy::PassManagerBase *PM, int opt_level,
         PM->add(createLowerPTLSPass(dump_native));
         // Clean up write barrier and ptls lowering
         PM->add(createCFGSimplificationPass());
+        // Remove Julia's address space information
+        PM->add(createRemoveJuliaAddrspaces());
     }
     PM->add(createCombineMulAddPass());
     PM->add(createDivRemPairsPass());
