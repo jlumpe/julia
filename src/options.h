@@ -25,7 +25,9 @@
 // #define KEEP_BODIES
 
 // delete julia IR for non-inlineable functions after they're codegen'd
-#define JL_DELETE_NON_INLINEABLE 1
+// enabling this prohibits external codegen consumers like CUDAnative/GPUCompiler
+// from re-using the inferred method bodies.
+#define JL_DELETE_NON_INLINEABLE 0
 
 // fill in the jl_all_methods in world-counter order
 // so that it is possible to map (in a debugger) from
