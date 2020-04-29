@@ -93,31 +93,42 @@ function _threadsfor(iter,lbody)
 end
 
 """
-    Threads.@threads
+    Threads.@threads [schedule] for ... end
 
-A macro to parallelize a for-loop to run with multiple threads. This spawns [`nthreads()`](@ref)
-number of threads, splits the iteration space amongst them, and iterates in parallel.
-A barrier is placed at the end of the loop which waits for all the threads to finish
-execution, and the loop returns.
+A macro to parallelize a `for` loop to run with multiple threads. Splits the iteration
+space among multiple tasks and runs those tasks on threads according to a scheduling
+policy.
+A barrier is placed at the end of the loop which waits for all tasks to finish
+execution.
+
+The `schedule` argument can be used to request a particular scheduling policy.
+The only currently supported value is `static`, which creates one task per thread
+and divides the iterations equally among them.
+The default schedule (used when no `schedule` argument is present) is subject to change.
+
+!!! compat "Julia 1.5"
+    The `schedule` argument is available as of Julia 1.5.
 """
 macro threads(args...)
     na = length(args)
-    if na != 1
+    if na == 2
+        sched, ex = args
+    elseif na == 1
+        sched = :static
+        ex = args[1]
+    else
         throw(ArgumentError("wrong number of arguments in @threads"))
     end
-    ex = args[1]
-    if !isa(ex, Expr)
-        throw(ArgumentError("need an expression argument to @threads"))
+    if !(isa(ex, Expr) && ex.head === :for)
+        throw(ArgumentError("@threads requires a `for` loop expression"))
     end
-    if ex.head === :for
-        if ex.args[1] isa Expr && ex.args[1].head === :(=)
-            return _threadsfor(ex.args[1], ex.args[2])
-        else
-            throw(ArgumentError("nested outer loops are not currently supported by @threads"))
-        end
-    else
-        throw(ArgumentError("unrecognized argument to @threads"))
+    if sched != :static
+        throw(ArgumentError("unsupported schedule argument in @threads"))
     end
+    if !(ex.args[1] isa Expr && ex.args[1].head === :(=))
+        throw(ArgumentError("nested outer loops are not currently supported by @threads"))
+    end
+    return _threadsfor(ex.args[1], ex.args[2])
 end
 
 """
