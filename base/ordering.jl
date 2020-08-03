@@ -6,8 +6,8 @@ module Order
 import ..@__MODULE__, ..parentmodule
 const Base = parentmodule(@__MODULE__)
 import .Base:
-    AbstractVector, @propagate_inbounds, isless, identity, getindex,
-    +, -, !, &, <, |
+    AbstractVector, @propagate_inbounds, isless, identity,
+    !, &, <, |
 
 ## notions of element ordering ##
 
